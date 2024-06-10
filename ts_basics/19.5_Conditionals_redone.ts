@@ -1,47 +1,24 @@
-import fetch from "node-fetch";
+// Function overloads
+function processInput<T extends string>(input: T): number;
+function processInput<T extends any[]>(input: T): number;
+function processInput<T>(input: T): null;
 
-interface PokemonResults {
-  count?: number;
-  next?: string;
-  previous?: string;
-  results?: {
-    name: string;
-    url: string;
-  }[];
+// Implementation
+function processInput<T>(input: T): number | null {
+  if (typeof input === 'string') {
+    return input.length;
+  } else if (Array.isArray(input)) {
+    return input.length;
+  } else {
+    return null;
+  }
 }
 
+// Usage examples
+const stringResult = processInput('hello'); // type: number
+const arrayResult = processInput([1, 2, 3]); // type: number
+const otherResult = processInput(42); // type: null
 
-
-function fetchPokemon(
-  url: string,
-  cb: (data:PokemonResults)=>void
-):void
-
-function fetchPokemon(
-  url: string 
-):Promise<PokemonResults>
-
-function fetchPokemon(
-    url: string,
-    cb?: (data:PokemonResults)=>void
-  ):unknown
-  {
- if(cb){
-  import('node-fetch')
-  .then(({ default: fetch }) => fetch(url))
-  .then(res => res.json())
-  .then(data => cb(data as PokemonResults));
-    return undefined
- } else{
-    return fetch(url).then(res=>res.json())
- }
-}
-
-fetchPokemon('https://pokeapi.co/api/v2/pokemon?offset=10&limit=10',(data)=>{
-    data.results?.forEach(pokemon => console.log(pokemon.name))
-});
-
-(async function(){
-    const data = <PokemonResults>(await fetchPokemon('https://pokeapi.co/api/v2/pokemon?offset=10&limit=10') )
-    data.results?.forEach((pokemon)=>console.log(pokemon.name))
-})()
+console.log(stringResult); // Output: 5
+console.log(arrayResult); // Output: 3
+console.log(otherResult); // Output: null

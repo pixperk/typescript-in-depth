@@ -1,53 +1,24 @@
-interface PokemonResults {
-  count: number;
-  next?: string;
-  previous?: string;
-  results: {
-    name: string;
-    url: string;
-  }[];
-}
+type ProcessedInput<T> = T extends string
+  ? number
+  : T extends any[]
+  ? number
+  : null;
 
-type FetchPokemonResult<T> = T extends undefined ? Promise<PokemonResults> : void;
-
-function fetchPokemon<T extends undefined | ((data: PokemonResults) => void)>(
-  url: string,
-  cb?: T
-): FetchPokemonResult<T> {
-  // Mocking the fetching behavior
-  const mockFetch = async (url: string) => {
-    const mockData: PokemonResults = {
-      count: 1118,
-      results: [
-        { name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1/" },
-        { name: "ivysaur", url: "https://pokeapi.co/api/v2/pokemon/2/" },
-        // Add more mock data as needed
-      ]
-    };
-    return mockData;
-  };
-
-  if (cb) {
-    // Simulating asynchronous behavior
-    setTimeout(async () => {
-      const data = await mockFetch(url);
-      cb(data);
-    }, 1000);
-    return undefined as FetchPokemonResult<T>;
+function processInput<T>(input: T): ProcessedInput<T> {
+  if (typeof input === 'string') {
+    return input.length as ProcessedInput<T>;
+  } else if (Array.isArray(input)) {
+    return input.length as ProcessedInput<T>;
   } else {
-    return mockFetch(url) as FetchPokemonResult<T>;
+    return null as ProcessedInput<T>;
   }
 }
 
-// Using the fetchPokemon function with callback
-fetchPokemon("https://pokeapi.co/api/v2/pokemon?offset=10&limit=10", data => {
-  data.results.forEach(pokemon => console.log(pokemon.name));
-});
+// Usage examples
+const stringResult = processInput('hello'); // type: number
+const arrayResult = processInput([1, 2, 3]); // type: number
+const otherResult = processInput(42); // type: null
 
-// Using the fetchPokemon function with async/await
-(async function () {
-  const data = <PokemonResults>(
-    await fetchPokemon("https://pokeapi.co/api/v2/pokemon?offset=10&limit=10")
-  );
-  data.results.forEach(pokemon => console.log(pokemon.name));
-})();
+console.log(stringResult); // Output: 5
+console.log(arrayResult); // Output: 3
+console.log(otherResult); // Output: null
