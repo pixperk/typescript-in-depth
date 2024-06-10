@@ -60,7 +60,7 @@ function App() {
       .then((data) => setPayload(data));
   }, []);
 
-    const [todos, dispatch] = useReducer((state: Todo[], action: ActionType) => {
+    const [todos, dispatch] = useReducer((state: Todo[], action: ActionType):Todo[] => {
     switch (action.type) {
       case "ADD":
         return [
