@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
-import { useTodos } from "./useTodos";
+import {
+  useRemoveTodos,
+  useAddTodos,
+  useTodos,
+  TodosProvider,
+} from "./useTodos";
 
 // Define a simple interface for components that accept children
 interface ForChildren {
@@ -14,36 +19,40 @@ const Heading = ({ title }: { title: string }) => {
 
 // Styles for the heading
 const headingStyle: React.CSSProperties = {
-  fontSize: "1.5rem",
-  color: "#333",
-  borderBottom: "2px solid #007bff",
+  fontSize: "2rem",
+  color: "#2c3e50",
+  borderBottom: "3px solid #3498db",
   paddingBottom: "0.5rem",
   marginBottom: "1rem",
+  fontWeight: "bold",
+  textAlign: "center",
+  fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
 };
 
 // Inline styles for the button component
 const buttonStyle: React.CSSProperties = {
-  backgroundColor: "#007bff",
+  backgroundColor: "#3498db",
   color: "white",
   border: "none",
   borderRadius: "4px",
-  padding: "10px 20px",
+  padding: "12px 24px",
   fontSize: "16px",
   cursor: "pointer",
-  transition: "background-color 0.3s ease",
+  transition: "background-color 0.3s ease, transform 0.3s ease",
   margin: "0 0.5rem",
 };
 
 const hoverStyle: React.CSSProperties = {
-  backgroundColor: "#0056b3",
+  backgroundColor: "#2980b9",
 };
 
 const activeStyle: React.CSSProperties = {
-  backgroundColor: "#004494",
+  backgroundColor: "#1c6ea4",
+  transform: "scale(0.98)",
 };
 
 const disabledStyle: React.CSSProperties = {
-  backgroundColor: "#cccccc",
+  backgroundColor: "#bdc3c7",
   cursor: "not-allowed",
 };
 
@@ -87,10 +96,13 @@ const Box: React.FunctionComponent<ForChildren> = ({ children }) => (
     style={{
       padding: "1rem",
       fontWeight: "bold",
-      backgroundColor: "#f9f9f9",
-      borderRadius: "4px",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+      backgroundColor: "#ecf0f1",
+      borderRadius: "8px",
+      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
       marginBottom: "1rem",
+      textAlign: "center",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      color: "#2c3e50",
     }}
   >
     {children}
@@ -103,7 +115,7 @@ function UL<T>({
   render,
   liststyle,
   itemstyle,
-  itemClick
+  itemClick,
 }: {
   items: T[]; // Accepts an array of items of type T
   render: (item: T) => React.ReactNode; // Function to render each item, taking an item of type T and returning a React node
@@ -123,9 +135,9 @@ function UL<T>({
 }
 
 function App() {
-  const { todos, addTodo, removeTodo } = useTodos([
-    { id: 0, text: "Write your first todo", done: false },
-  ]);
+  const todos = useTodos();
+  const addTodo = useAddTodos();
+  const removeTodo = useRemoveTodos();
 
   // Ref for the new todo input
   const newTodoRef = useRef<HTMLInputElement>(null);
@@ -153,7 +165,7 @@ function App() {
     <div style={appContainerStyle}>
       <Heading title="Todofy it!" />
       <Box>{dateTime.toLocaleString()}</Box>
-      <Heading title="Your To-Do List" />
+      <Heading title="Achieve Your Goals" />
       <UL
         itemClick={(item) => alert(item.text)} // Function to handle item click, with item inferred as Todo type
         itemstyle={todoItemStyle}
@@ -167,44 +179,98 @@ function App() {
         )}
       />
       <div style={inputContainerStyle}>
-        <input type="text" ref={newTodoRef} style={inputStyle} />
+        <input type="text" ref={newTodoRef} style={inputStyle} placeholder="Add a new task..." />
         <Button onClick={onAddTodo}>Add</Button>
       </div>
     </div>
   );
 }
 
-export default App;
+const JustShowTodos = () => {
+  const todos = useTodos();
+  return (
+    <UL
+      itemClick={() => { }}
+      itemstyle={todoItemStyle}
+      liststyle={todoListStyle}
+      items={todos} // Passing todos as items, inferred as Todo[] type
+      render={(todo) => <>{todo.text}</>}
+    />
+  );
+};
+
+const AppWrapper = () => (
+  <TodosProvider
+    initialTodos={[{ id: 0, text: "Write your first todo", done: false }]}
+  >
+    <div style={appWrapperStyle}>
+      <App />
+      <JustShowTodos />
+    </div>
+  </TodosProvider>
+);
+
+export default AppWrapper;
 
 // Additional styling for the app container, todo list, input, etc.
 const appContainerStyle: React.CSSProperties = {
-  maxWidth: "600px",
-  margin: "0 auto",
-  padding: "1rem",
-  fontFamily: "Arial, sans-serif",
+  maxWidth: "800px",
+  margin: "2rem auto",
+  padding: "2rem",
+  fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  backgroundColor: "#fff",
+  borderRadius: "8px",
+  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+};
+
+const appWrapperStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "2rem",
+  padding: "2rem",
+  backgroundColor: "#ecf0f1",
 };
 
 const todoListStyle: React.CSSProperties = {
   marginBottom: "1rem",
+  padding: "0",
+  listStyleType: "none",
 };
 
 const todoItemStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  padding: "0.5rem",
+  padding: "1rem",
   borderBottom: "1px solid #ddd",
+  backgroundColor: "#f9f9f9",
+  borderRadius: "4px",
+  marginBottom: "0.5rem",
+  transition: "background-color 0.3s ease",
 };
 
 const inputContainerStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
+  marginTop: "1rem",
 };
 
 const inputStyle: React.CSSProperties = {
   flex: 1,
-  padding: "0.5rem",
+  padding: "0.75rem",
   fontSize: "16px",
   borderRadius: "4px",
   border: "1px solid #ddd",
+  marginRight: "0.5rem",
+  transition: "border-color 0.3s ease",
 };
+
+
+// Additional styling for the input placeholder
+const inputPlaceholderStyle: React.CSSProperties = {
+  color: "#95a5a6",
+  fontStyle: "italic",
+};
+
+// Set inputStyle placeholder
+(inputStyle as any)["::placeholder"] = inputPlaceholderStyle;
